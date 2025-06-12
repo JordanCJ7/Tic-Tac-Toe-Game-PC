@@ -4,13 +4,41 @@
         Title="Tic Tac Toe" Height="450" Width="400">
     <Grid>
         <Grid x:Name="StartScreen" Visibility="Visible" Background="White">
-            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                <TextBlock Text="Select Board Size" FontSize="24" Margin="0,0,0,20" TextAlignment="Center" Foreground="Black"/>
-                <Button Content="3×3 Classic" Width="200" Height="40" Margin="0,5" Click="Board3x3_Click" Background="LightBlue"/>
-                <Button Content="4×4 Extended" Width="200" Height="40" Margin="0,5" Click="Board4x4_Click" Background="LightBlue"/>
-                <Button Content="5×5 Advanced" Width="200" Height="40" Margin="0,5" Click="Board5x5_Click" Background="LightBlue"/>
-                <Button Content="6×6 Expert" Width="200" Height="40" Margin="0,5" Click="Board6x6_Click" Background="LightBlue"/>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            
+            <TextBlock Text="Game Mode" FontSize="24" Margin="0,20,0,10" TextAlignment="Center" Foreground="Black" Grid.Row="0"/>
+            <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,20">
+                <RadioButton x:Name="PlayerModeRadio" Content="VS Player" Margin="10,0" IsChecked="True" GroupName="GameMode"/>
+                <RadioButton x:Name="AIModeRadio" Content="VS AI" Margin="10,0" GroupName="GameMode"/>
             </StackPanel>
+            
+            <Grid Grid.Row="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                
+                <StackPanel Grid.Row="0" x:Name="BoardSizePanel" VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <TextBlock Text="Select Board Size" FontSize="20" Margin="0,0,0,10" TextAlignment="Center" Foreground="Black"/>
+                    <Button Content="3×3 Classic" Width="200" Height="40" Margin="0,5" Click="Board3x3_Click" Background="LightBlue"/>
+                    <Button Content="4×4 Extended" Width="200" Height="40" Margin="0,5" Click="Board4x4_Click" Background="LightBlue"/>
+                    <Button Content="5×5 Advanced" Width="200" Height="40" Margin="0,5" Click="Board5x5_Click" Background="LightBlue"/>
+                    <Button Content="6×6 Expert" Width="200" Height="40" Margin="0,5" Click="Board6x6_Click" Background="LightBlue"/>
+                </StackPanel>
+                
+                <StackPanel Grid.Row="1" x:Name="AIDifficultyPanel" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Collapsed" Margin="0,20,0,0">
+                    <TextBlock Text="Select AI Difficulty" FontSize="18" Margin="0,0,0,10" TextAlignment="Center" Foreground="Black"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <RadioButton x:Name="EasyAIRadio" Content="Easy" Margin="10,0" IsChecked="True" GroupName="AIDifficulty"/>
+                        <RadioButton x:Name="MediumAIRadio" Content="Medium" Margin="10,0" GroupName="AIDifficulty"/>
+                        <RadioButton x:Name="HardAIRadio" Content="Hard" Margin="10,0" GroupName="AIDifficulty"/>
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
         </Grid>
         
         <Grid x:Name="GameScreen" Visibility="Collapsed">
