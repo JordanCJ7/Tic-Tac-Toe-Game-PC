@@ -1,10 +1,35 @@
 <Window x:Class="TicTacToe.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Tic Tac Toe" Height="350" Width="350">
+        Title="Tic Tac Toe" Height="450" Width="400">
     <Grid>
-        <UniformGrid Rows="3" Columns="3" x:Name="GameGrid">
-            <!-- Buttons for the game will be added in code-behind -->
-        </UniformGrid>
+        <Grid x:Name="StartScreen" Visibility="Visible" Background="White">
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                <TextBlock Text="Select Board Size" FontSize="24" Margin="0,0,0,20" TextAlignment="Center" Foreground="Black"/>
+                <Button Content="3×3 Classic" Width="200" Height="40" Margin="0,5" Click="Board3x3_Click" Background="LightBlue"/>
+                <Button Content="4×4 Extended" Width="200" Height="40" Margin="0,5" Click="Board4x4_Click" Background="LightBlue"/>
+                <Button Content="5×5 Advanced" Width="200" Height="40" Margin="0,5" Click="Board5x5_Click" Background="LightBlue"/>
+                <Button Content="6×6 Expert" Width="200" Height="40" Margin="0,5" Click="Board6x6_Click" Background="LightBlue"/>
+            </StackPanel>
+        </Grid>
+        
+        <Grid x:Name="GameScreen" Visibility="Collapsed">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            
+            <TextBlock x:Name="GameInfo" Text="Player X's Turn" FontSize="20" Margin="10" TextAlignment="Center" Grid.Row="0"/>
+            
+            <UniformGrid Grid.Row="1" x:Name="GameGrid" Margin="10">
+                <!-- Buttons for the game will be added in code-behind -->
+            </UniformGrid>
+            
+            <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" Margin="10">
+                <Button Content="New Game" Width="100" Margin="5" Click="NewGame_Click"/>
+                <Button Content="Change Size" Width="100" Margin="5" Click="ChangeSize_Click"/>
+            </StackPanel>
+        </Grid>
     </Grid>
 </Window>
