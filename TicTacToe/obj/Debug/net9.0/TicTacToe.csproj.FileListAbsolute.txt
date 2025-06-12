@@ -1,0 +1,14 @@
+C:\Users\janit\OneDrive\Desktop\jj\TicTacToe\bin\Debug\net9.0\TicTacToe.exe
+C:\Users\janit\OneDrive\Desktop\jj\TicTacToe\bin\Debug\net9.0\TicTacToe.deps.json
+C:\Users\janit\OneDrive\Desktop\jj\TicTacToe\bin\Debug\net9.0\TicTacToe.runtimeconfig.json
+C:\Users\janit\OneDrive\Desktop\jj\TicTacToe\bin\Debug\net9.0\TicTacToe.dll
+C:\Users\janit\OneDrive\Desktop\jj\TicTacToe\bin\Debug\net9.0\TicTacToe.pdb
+C:\Users\janit\OneDrive\Desktop\jj\TicTacToe\obj\Debug\net9.0\TicTacToe.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\janit\OneDrive\Desktop\jj\TicTacToe\obj\Debug\net9.0\TicTacToe.AssemblyInfoInputs.cache
+C:\Users\janit\OneDrive\Desktop\jj\TicTacToe\obj\Debug\net9.0\TicTacToe.AssemblyInfo.cs
+C:\Users\janit\OneDrive\Desktop\jj\TicTacToe\obj\Debug\net9.0\TicTacToe.csproj.CoreCompileInputs.cache
+C:\Users\janit\OneDrive\Desktop\jj\TicTacToe\obj\Debug\net9.0\TicTacToe.dll
+C:\Users\janit\OneDrive\Desktop\jj\TicTacToe\obj\Debug\net9.0\refint\TicTacToe.dll
+C:\Users\janit\OneDrive\Desktop\jj\TicTacToe\obj\Debug\net9.0\TicTacToe.pdb
+C:\Users\janit\OneDrive\Desktop\jj\TicTacToe\obj\Debug\net9.0\TicTacToe.genruntimeconfig.cache
+C:\Users\janit\OneDrive\Desktop\jj\TicTacToe\obj\Debug\net9.0\ref\TicTacToe.dll

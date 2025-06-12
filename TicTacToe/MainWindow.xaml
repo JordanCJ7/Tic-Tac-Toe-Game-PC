@@ -1,0 +1,10 @@
+<Window x:Class="TicTacToe.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Tic Tac Toe" Height="350" Width="350">
+    <Grid>
+        <UniformGrid Rows="3" Columns="3" x:Name="GameGrid">
+            <!-- Buttons for the game will be added in code-behind -->
+        </UniformGrid>
+    </Grid>
+</Window>
