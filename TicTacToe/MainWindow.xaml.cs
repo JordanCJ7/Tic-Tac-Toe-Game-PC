@@ -1,10 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using System.Windows.Threading;
+using System;
 
 namespace TicTacToe
 {
@@ -15,33 +12,76 @@ namespace TicTacToe
         private bool gameEnded = false;
         private int boardSize;
         private int winLength;
-        private bool isAIMode = false;
-        private enum AIDifficulty { Easy, Medium, Hard }
-        private AIDifficulty currentAIDifficulty = AIDifficulty.Easy;
-        private Random random = new Random();
-        private char aiPlayer = 'O'; // AI is always O, human is always X
+        private bool isAIGame = false;
+        private int aiDifficulty = 0; // 0: Easy, 1: Medium, 2: Hard
 
         public MainWindow()
         {
             InitializeComponent();
             
             // Explicitly set initial visibility
-            StartScreen.Visibility = Visibility.Visible;
+            GameModeScreen.Visibility = Visibility.Visible;
+            BoardSizeScreen.Visibility = Visibility.Collapsed;
             GameScreen.Visibility = Visibility.Collapsed;
-            
-            // Add event handlers for radio buttons
-            AIModeRadio.Checked += GameModeRadio_Checked;
-            PlayerModeRadio.Checked += GameModeRadio_Checked;
-            
-            // Set default values
-            isAIMode = false;
         }
+
+        #region Navigation Methods
         
-        private void GameModeRadio_Checked(object sender, RoutedEventArgs e)
+        private void PlayerVsPlayer_Click(object sender, RoutedEventArgs e)
         {
-            isAIMode = sender == AIModeRadio;
-            AIDifficultyPanel.Visibility = isAIMode ? Visibility.Visible : Visibility.Collapsed;
+            isAIGame = false;
+            GameModeScreen.Visibility = Visibility.Collapsed;
+            BoardSizeScreen.Visibility = Visibility.Visible;
         }
+
+        private void PlayerVsAI_Click(object sender, RoutedEventArgs e)
+        {
+            // Show AI difficulty options
+            AIDifficultyText.Visibility = Visibility.Visible;
+            AIDifficultyPanel.Visibility = Visibility.Visible;
+        }
+
+        private void AIEasy_Click(object sender, RoutedEventArgs e)
+        {
+            isAIGame = true;
+            aiDifficulty = 0;
+            GameModeScreen.Visibility = Visibility.Collapsed;
+            BoardSizeScreen.Visibility = Visibility.Visible;
+        }
+
+        private void AIMedium_Click(object sender, RoutedEventArgs e)
+        {
+            isAIGame = true;
+            aiDifficulty = 1;
+            GameModeScreen.Visibility = Visibility.Collapsed;
+            BoardSizeScreen.Visibility = Visibility.Visible;
+        }
+
+        private void AIHard_Click(object sender, RoutedEventArgs e)
+        {
+            isAIGame = true;
+            aiDifficulty = 2;
+            GameModeScreen.Visibility = Visibility.Collapsed;
+            BoardSizeScreen.Visibility = Visibility.Visible;
+        }
+
+        private void BackToGameMode_Click(object sender, RoutedEventArgs e)
+        {
+            BoardSizeScreen.Visibility = Visibility.Collapsed;
+            GameModeScreen.Visibility = Visibility.Visible;
+            AIDifficultyText.Visibility = Visibility.Collapsed;
+            AIDifficultyPanel.Visibility = Visibility.Collapsed;
+        }
+
+        private void MainMenu_Click(object sender, RoutedEventArgs e)
+        {
+            GameScreen.Visibility = Visibility.Collapsed;
+            GameModeScreen.Visibility = Visibility.Visible;
+            AIDifficultyText.Visibility = Visibility.Collapsed;
+            AIDifficultyPanel.Visibility = Visibility.Collapsed;
+        }
+
+        #endregion
 
         #region Game Setup Methods
 
@@ -71,25 +111,13 @@ namespace TicTacToe
             winLength = winCondition;
             board = new char[boardSize, boardSize];
             
-            // Set AI difficulty if in AI mode
-            if (isAIMode)
-            {
-                if (MediumAIRadio.IsChecked == true)
-                    currentAIDifficulty = AIDifficulty.Medium;
-                else if (HardAIRadio.IsChecked == true)
-                    currentAIDifficulty = AIDifficulty.Hard;
-                else
-                    currentAIDifficulty = AIDifficulty.Easy;
-            }
-            
             // Initialize the game
             InitializeGameBoard();
             InitializeBoard();
             
             // Update UI
-            string playerInfo = isAIMode ? "Player vs AI" : "Player X's Turn";
-            GameInfo.Text = playerInfo;
-            StartScreen.Visibility = Visibility.Collapsed;
+            GameInfo.Text = "Player X's Turn";
+            BoardSizeScreen.Visibility = Visibility.Collapsed;
             GameScreen.Visibility = Visibility.Visible;
         }
 
@@ -132,16 +160,10 @@ namespace TicTacToe
             ResetGame();
         }
 
-        private void ChangeSize_Click(object sender, RoutedEventArgs e)
-        {
-            GameScreen.Visibility = Visibility.Collapsed;
-            StartScreen.Visibility = Visibility.Visible;
-        }
-
         #endregion
 
         #region Game Logic Methods
-        
+
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             if (gameEnded) return;
@@ -154,11 +176,23 @@ namespace TicTacToe
             if (board[row, col] != ' ')
                 return;
                 
-            // In AI mode, only allow player to make moves as 'X'
-            if (isAIMode && currentPlayer != 'X')
-                return;
-                
+            // Make player move
+            MakeMove(row, col);
+            
+            // If AI game and player didn't win or draw, make AI move
+            if (isAIGame && !gameEnded && currentPlayer == 'O')
+            {
+                MakeAIMove();
+            }
+        }
+
+        private void MakeMove(int row, int col)
+        {
             board[row, col] = currentPlayer;
+            
+            // Update the button
+            int index = row * boardSize + col;
+            Button button = (Button)GameGrid.Children[index];
             button.Content = currentPlayer.ToString();
             
             // Set color based on player
@@ -168,9 +202,8 @@ namespace TicTacToe
 
             if (CheckWin(row, col))
             {
-                string winner = isAIMode ? (currentPlayer == 'X' ? "You win!" : "AI wins!") : $"Player {currentPlayer} wins!";
-                GameInfo.Text = winner;
-                MessageBox.Show(winner);
+                GameInfo.Text = $"Player {currentPlayer} wins!";
+                MessageBox.Show($"Player {currentPlayer} wins!");
                 gameEnded = true;
             }
             else if (IsBoardFull())
@@ -182,28 +215,120 @@ namespace TicTacToe
             else
             {
                 currentPlayer = currentPlayer == 'X' ? 'O' : 'X';
-                
-                if (isAIMode && currentPlayer == 'O' && !gameEnded)
+                GameInfo.Text = $"Player {currentPlayer}'s Turn";
+            }
+        }
+
+        private void MakeAIMove()
+        {
+            // Delay to make AI move seem natural
+            System.Threading.Thread.Sleep(500);
+            
+            // Choose AI move based on difficulty
+            (int row, int col) = aiDifficulty switch
+            {
+                0 => GetEasyAIMove(),
+                1 => GetMediumAIMove(),
+                2 => GetHardAIMove(),
+                _ => GetEasyAIMove()
+            };
+            
+            MakeMove(row, col);
+        }
+
+        private (int, int) GetEasyAIMove()
+        {
+            // Easy: Random move
+            var random = new Random();
+            int row, col;
+            
+            do
+            {
+                row = random.Next(0, boardSize);
+                col = random.Next(0, boardSize);
+            } while (board[row, col] != ' ');
+            
+            return (row, col);
+        }
+
+        private (int, int) GetMediumAIMove()
+        {
+            // Medium: 50% chance of choosing the best move, 50% random
+            var random = new Random();
+            if (random.Next(2) == 0)
+            {
+                return GetHardAIMove(); // Choose best move
+            }
+            else
+            {
+                return GetEasyAIMove(); // Choose random move
+            }
+        }
+
+        private (int, int) GetHardAIMove()
+        {
+            // Hard: Try to win, block player, or make strategic move
+            
+            // First check if AI can win
+            for (int i = 0; i < boardSize; i++)
+            {
+                for (int j = 0; j < boardSize; j++)
                 {
-                    GameInfo.Text = "AI is thinking...";
-                    
-                    // Use a small delay to give a thinking effect for the AI
-                    var timer = new DispatcherTimer
+                    if (board[i, j] == ' ')
                     {
-                        Interval = TimeSpan.FromMilliseconds(500)
-                    };
-                    timer.Tick += (s, args) =>
-                    {
-                        MakeAIMove();
-                        timer.Stop();
-                    };
-                    timer.Start();
-                }
-                else
-                {
-                    GameInfo.Text = isAIMode ? "Your Turn" : $"Player {currentPlayer}'s Turn";
+                        board[i, j] = 'O'; // Try move
+                        if (CheckWin(i, j))
+                        {
+                            board[i, j] = ' '; // Undo move
+                            return (i, j); // Winning move
+                        }
+                        board[i, j] = ' '; // Undo move
+                    }
                 }
             }
+            
+            // Check if player can win and block
+            for (int i = 0; i < boardSize; i++)
+            {
+                for (int j = 0; j < boardSize; j++)
+                {
+                    if (board[i, j] == ' ')
+                    {
+                        board[i, j] = 'X'; // Try player move
+                        if (CheckWin(i, j))
+                        {
+                            board[i, j] = ' '; // Undo move
+                            return (i, j); // Blocking move
+                        }
+                        board[i, j] = ' '; // Undo move
+                    }
+                }
+            }
+            
+            // If center is empty, take it (for 3x3 board)
+            if (boardSize == 3 && board[1, 1] == ' ')
+            {
+                return (1, 1);
+            }
+            
+            // Take a corner if available (strategic for 3x3)
+            if (boardSize == 3)
+            {
+                int[][] corners = new int[][] { new int[] { 0, 0 }, new int[] { 0, 2 }, new int[] { 2, 0 }, new int[] { 2, 2 } };
+                var random = new Random();
+                var shuffledCorners = corners.OrderBy(x => random.Next()).ToArray();
+                
+                foreach (var corner in shuffledCorners)
+                {
+                    if (board[corner[0], corner[1]] == ' ')
+                    {
+                        return (corner[0], corner[1]);
+                    }
+                }
+            }
+            
+            // Otherwise, make a random move
+            return GetEasyAIMove();
         }
 
         private bool CheckWin(int lastMoveRow, int lastMoveCol)
@@ -301,569 +426,7 @@ namespace TicTacToe
             InitializeBoard();
             foreach (Button btn in GameGrid.Children)
                 btn.Content = string.Empty;
-            GameInfo.Text = isAIMode ? "Your Turn" : "Player X's Turn";
-        }
-
-        #endregion
-
-        #region AI Logic Methods
-
-        private void MakeAIMove()
-        {
-            if (gameEnded) return;
-
-            (int row, int col) = GetAIMove();
-            
-            // Make the move
-            board[row, col] = aiPlayer;
-            
-            // Find the button for this position
-            int index = row * boardSize + col;
-            var button = GameGrid.Children.Cast<Button>().FirstOrDefault(b => b.Tag is int tag && tag == index);
-            
-            if (button != null)
-            {
-                button.Content = aiPlayer.ToString();
-                button.Foreground = new SolidColorBrush(Colors.DarkRed);
-                
-                if (CheckWin(row, col))
-                {
-                    GameInfo.Text = "AI wins!";
-                    MessageBox.Show("AI wins!");
-                    gameEnded = true;
-                }
-                else if (IsBoardFull())
-                {
-                    GameInfo.Text = "It's a draw!";
-                    MessageBox.Show("It's a draw!");
-                    gameEnded = true;
-                }
-                else
-                {
-                    currentPlayer = 'X'; // Switch back to human player
-                    GameInfo.Text = "Your Turn";
-                }
-            }
-        }
-
-        private (int row, int col) GetAIMove()
-        {
-            switch (currentAIDifficulty)
-            {
-                case AIDifficulty.Hard:
-                    return GetHardAIMove();
-                case AIDifficulty.Medium:
-                    return GetMediumAIMove();
-                case AIDifficulty.Easy:
-                default:
-                    return GetEasyAIMove();
-            }
-        }
-
-        private (int row, int col) GetEasyAIMove()
-        {
-            // Easy AI: Make random moves
-            var emptyCells = new List<(int row, int col)>();
-            
-            for (int i = 0; i < boardSize; i++)
-            {
-                for (int j = 0; j < boardSize; j++)
-                {
-                    if (board[i, j] == ' ')
-                    {
-                        emptyCells.Add((i, j));
-                    }
-                }
-            }
-            
-            if (emptyCells.Count > 0)
-            {
-                int randomIndex = random.Next(emptyCells.Count);
-                return emptyCells[randomIndex];
-            }
-            
-            // Should never happen if called correctly
-            return (0, 0);
-        }
-
-        private (int row, int col) GetMediumAIMove()
-        {
-            // Medium AI: Block opponent's winning moves and try to win
-            
-            // First check if AI can win in the next move
-            for (int i = 0; i < boardSize; i++)
-            {
-                for (int j = 0; j < boardSize; j++)
-                {
-                    if (board[i, j] == ' ')
-                    {
-                        // Try this move
-                        board[i, j] = aiPlayer;
-                        
-                        if (CheckWin(i, j))
-                        {
-                            // Undo the move
-                            board[i, j] = ' ';
-                            return (i, j);
-                        }
-                        
-                        // Undo the move
-                        board[i, j] = ' ';
-                    }
-                }
-            }
-            
-            // Then check if opponent can win in the next move and block
-            for (int i = 0; i < boardSize; i++)
-            {
-                for (int j = 0; j < boardSize; j++)
-                {
-                    if (board[i, j] == ' ')
-                    {
-                        // Try this move for the opponent
-                        board[i, j] = 'X';
-                        
-                        if (CheckWin(i, j))
-                        {
-                            // Undo the move
-                            board[i, j] = ' ';
-                            return (i, j);
-                        }
-                        
-                        // Undo the move
-                        board[i, j] = ' ';
-                    }
-                }
-            }
-            
-            // 50% chance to make a strategic move, 50% random
-            if (random.Next(2) == 0)
-            {
-                // Try to play in the center or corners first
-                var preferredMoves = new List<(int row, int col)>();
-                
-                // Center
-                int center = boardSize / 2;
-                if (boardSize % 2 == 1 && board[center, center] == ' ')
-                {
-                    return (center, center);
-                }
-                
-                // Corners
-                var corners = new List<(int row, int col)>
-                {
-                    (0, 0),
-                    (0, boardSize - 1),
-                    (boardSize - 1, 0),
-                    (boardSize - 1, boardSize - 1)
-                };
-                
-                foreach (var corner in corners)
-                {
-                    if (board[corner.row, corner.col] == ' ')
-                    {
-                        preferredMoves.Add(corner);
-                    }
-                }
-                
-                if (preferredMoves.Count > 0)
-                {
-                    int randomIndex = random.Next(preferredMoves.Count);
-                    return preferredMoves[randomIndex];
-                }
-            }
-            
-            // Otherwise make a random move
-            return GetEasyAIMove();
-        }
-
-        private (int row, int col) GetHardAIMove()
-        {
-            // For 3x3 board use minimax
-            if (boardSize == 3)
-            {
-                return MinimaxMove();
-            }
-            
-            // For larger boards, we'll use a smarter version of medium difficulty
-            // to avoid long computation times
-            
-            // First check if AI can win in the next move
-            for (int i = 0; i < boardSize; i++)
-            {
-                for (int j = 0; j < boardSize; j++)
-                {
-                    if (board[i, j] == ' ')
-                    {
-                        // Try this move
-                        board[i, j] = aiPlayer;
-                        
-                        if (CheckWin(i, j))
-                        {
-                            // Undo the move
-                            board[i, j] = ' ';
-                            return (i, j);
-                        }
-                        
-                        // Undo the move
-                        board[i, j] = ' ';
-                    }
-                }
-            }
-            
-            // Then check if opponent can win in the next move and block
-            for (int i = 0; i < boardSize; i++)
-            {
-                for (int j = 0; j < boardSize; j++)
-                {
-                    if (board[i, j] == ' ')
-                    {
-                        // Try this move for the opponent
-                        board[i, j] = 'X';
-                        
-                        if (CheckWin(i, j))
-                        {
-                            // Undo the move
-                            board[i, j] = ' ';
-                            return (i, j);
-                        }
-                        
-                        // Undo the move
-                        board[i, j] = ' ';
-                    }
-                }
-            }
-            
-            // Look for fork opportunities (creating two threats to win)
-            var forkMove = FindForkMove(aiPlayer);
-            if (forkMove.Item1 != -1)
-            {
-                return (forkMove.Item1, forkMove.Item2);
-            }
-            
-            // Block opponent's fork opportunities
-            forkMove = FindForkMove('X');
-            if (forkMove.Item1 != -1)
-            {
-                return (forkMove.Item1, forkMove.Item2);
-            }
-            
-            // Center
-            int center = boardSize / 2;
-            if (boardSize % 2 == 1 && board[center, center] == ' ')
-            {
-                return (center, center);
-            }
-            
-            // Opposite corner
-            for (int i = 0; i < boardSize; i += boardSize - 1)
-            {
-                for (int j = 0; j < boardSize; j += boardSize - 1)
-                {
-                    if (board[i, j] == 'X' && board[boardSize - 1 - i, boardSize - 1 - j] == ' ')
-                    {
-                        return (boardSize - 1 - i, boardSize - 1 - j);
-                    }
-                }
-            }
-            
-            // Empty corner
-            for (int i = 0; i < boardSize; i += boardSize - 1)
-            {
-                for (int j = 0; j < boardSize; j += boardSize - 1)
-                {
-                    if (board[i, j] == ' ')
-                    {
-                        return (i, j);
-                    }
-                }
-            }
-            
-            // Empty edge
-            for (int i = 0; i < boardSize; i++)
-            {
-                if (board[i, 0] == ' ') return (i, 0);
-                if (board[i, boardSize - 1] == ' ') return (i, boardSize - 1);
-                if (board[0, i] == ' ') return (0, i);
-                if (board[boardSize - 1, i] == ' ') return (boardSize - 1, i);
-            }
-            
-            // If all else fails, make a random move
-            return GetEasyAIMove();
-        }
-
-        private (int, int) FindForkMove(char player)
-        {
-            for (int i = 0; i < boardSize; i++)
-            {
-                for (int j = 0; j < boardSize; j++)
-                {
-                    if (board[i, j] == ' ')
-                    {
-                        int winningLines = 0;
-                        board[i, j] = player;
-                        
-                        // Check if this move creates a fork (two potential winning lines)
-                        // Horizontal
-                        for (int startCol = 0; startCol <= boardSize - winLength; startCol++)
-                        {
-                            int playerCount = 0;
-                            int emptyCount = 0;
-                            
-                            for (int k = 0; k < winLength; k++)
-                            {
-                                if (board[i, startCol + k] == player) playerCount++;
-                                else if (board[i, startCol + k] == ' ') emptyCount++;
-                            }
-                            
-                            if (playerCount == winLength - 1 && emptyCount == 1)
-                                winningLines++;
-                        }
-                        
-                        // Vertical
-                        for (int startRow = 0; startRow <= boardSize - winLength; startRow++)
-                        {
-                            int playerCount = 0;
-                            int emptyCount = 0;
-                            
-                            for (int k = 0; k < winLength; k++)
-                            {
-                                if (board[startRow + k, j] == player) playerCount++;
-                                else if (board[startRow + k, j] == ' ') emptyCount++;
-                            }
-                            
-                            if (playerCount == winLength - 1 && emptyCount == 1)
-                                winningLines++;
-                        }
-                        
-                        // Diagonal (top-left to bottom-right)
-                        if (i - j >= -(boardSize - winLength) && i - j <= boardSize - winLength)
-                        {
-                            for (int offset = -Math.Min(i, j); offset <= Math.Min(boardSize - 1 - i, boardSize - 1 - j) - (winLength - 1); offset++)
-                            {
-                                int playerCount = 0;
-                                int emptyCount = 0;
-                                
-                                for (int k = 0; k < winLength; k++)
-                                {
-                                    if (i + offset + k < boardSize && j + offset + k < boardSize)
-                                    {
-                                        if (board[i + offset + k, j + offset + k] == player) playerCount++;
-                                        else if (board[i + offset + k, j + offset + k] == ' ') emptyCount++;
-                                    }
-                                }
-                                
-                                if (playerCount == winLength - 1 && emptyCount == 1)
-                                    winningLines++;
-                            }
-                        }
-                        
-                        // Anti-diagonal (top-right to bottom-left)
-                        if (i + j >= winLength - 1 && i + j <= 2 * boardSize - winLength - 1)
-                        {
-                            for (int offset = -Math.Min(i, boardSize - 1 - j); offset <= Math.Min(boardSize - 1 - i, j) - (winLength - 1); offset++)
-                            {
-                                int playerCount = 0;
-                                int emptyCount = 0;
-                                
-                                for (int k = 0; k < winLength; k++)
-                                {
-                                    if (i + offset + k < boardSize && j - offset - k >= 0)
-                                    {
-                                        if (board[i + offset + k, j - offset - k] == player) playerCount++;
-                                        else if (board[i + offset + k, j - offset - k] == ' ') emptyCount++;
-                                    }
-                                }
-                                
-                                if (playerCount == winLength - 1 && emptyCount == 1)
-                                    winningLines++;
-                            }
-                        }
-                        
-                        board[i, j] = ' ';
-                        
-                        if (winningLines >= 2)
-                            return (i, j);
-                    }
-                }
-            }
-            
-            return (-1, -1);
-        }
-
-        private (int row, int col) MinimaxMove()
-        {
-            int bestScore = int.MinValue;
-            (int row, int col) move = (-1, -1);
-            
-            for (int i = 0; i < boardSize; i++)
-            {
-                for (int j = 0; j < boardSize; j++)
-                {
-                    if (board[i, j] == ' ')
-                    {
-                        board[i, j] = aiPlayer;
-                        int score = Minimax(board, 0, false);
-                        board[i, j] = ' ';
-                        
-                        if (score > bestScore)
-                        {
-                            bestScore = score;
-                            move = (i, j);
-                        }
-                    }
-                }
-            }
-            
-            return move;
-        }
-
-        private int Minimax(char[,] board, int depth, bool isMaximizing)
-        {
-            // Check for terminal states
-            char winner = CheckWinner();
-            
-            if (winner == aiPlayer)
-                return 10 - depth;
-            else if (winner == 'X')
-                return depth - 10;
-            else if (IsBoardFull())
-                return 0;
-            
-            if (isMaximizing)
-            {
-                int bestScore = int.MinValue;
-                
-                for (int i = 0; i < boardSize; i++)
-                {
-                    for (int j = 0; j < boardSize; j++)
-                    {
-                        if (board[i, j] == ' ')
-                        {
-                            board[i, j] = aiPlayer;
-                            int score = Minimax(board, depth + 1, false);
-                            board[i, j] = ' ';
-                            bestScore = Math.Max(score, bestScore);
-                        }
-                    }
-                }
-                
-                return bestScore;
-            }
-            else
-            {
-                int bestScore = int.MaxValue;
-                
-                for (int i = 0; i < boardSize; i++)
-                {
-                    for (int j = 0; j < boardSize; j++)
-                    {
-                        if (board[i, j] == ' ')
-                        {
-                            board[i, j] = 'X';
-                            int score = Minimax(board, depth + 1, true);
-                            board[i, j] = ' ';
-                            bestScore = Math.Min(score, bestScore);
-                        }
-                    }
-                }
-                
-                return bestScore;
-            }
-        }
-
-        private char CheckWinner()
-        {
-            // Check rows
-            for (int i = 0; i < boardSize; i++)
-            {
-                for (int j = 0; j <= boardSize - winLength; j++)
-                {
-                    bool win = true;
-                    char first = board[i, j];
-                    
-                    if (first == ' ') continue;
-                    
-                    for (int k = 1; k < winLength; k++)
-                    {
-                        if (board[i, j + k] != first)
-                        {
-                            win = false;
-                            break;
-                        }
-                    }
-                    
-                    if (win) return first;
-                }
-            }
-            
-            // Check columns
-            for (int j = 0; j < boardSize; j++)
-            {
-                for (int i = 0; i <= boardSize - winLength; i++)
-                {
-                    bool win = true;
-                    char first = board[i, j];
-                    
-                    if (first == ' ') continue;
-                    
-                    for (int k = 1; k < winLength; k++)
-                    {
-                        if (board[i + k, j] != first)
-                        {
-                            win = false;
-                            break;
-                        }
-                    }
-                    
-                    if (win) return first;
-                }
-            }
-            
-            // Check diagonals
-            for (int i = 0; i <= boardSize - winLength; i++)
-            {
-                for (int j = 0; j <= boardSize - winLength; j++)
-                {
-                    // Diagonal (top-left to bottom-right)
-                    bool win = true;
-                    char first = board[i, j];
-                    
-                    if (first != ' ')
-                    {
-                        for (int k = 1; k < winLength; k++)
-                        {
-                            if (board[i + k, j + k] != first)
-                            {
-                                win = false;
-                                break;
-                            }
-                        }
-                        
-                        if (win) return first;
-                    }
-                    
-                    // Diagonal (top-right to bottom-left)
-                    win = true;
-                    first = board[i, j + winLength - 1];
-                    
-                    if (first != ' ')
-                    {
-                        for (int k = 1; k < winLength; k++)
-                        {
-                            if (board[i + k, j + winLength - 1 - k] != first)
-                            {
-                                win = false;
-                                break;
-                            }
-                        }
-                        
-                        if (win) return first;
-                    }
-                }
-            }
-            
-            return ' ';
+            GameInfo.Text = "Player X's Turn";
         }
 
         #endregion
