@@ -1,7 +1,9 @@
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using System;
 
 namespace TicTacToe
 {
@@ -164,7 +166,7 @@ namespace TicTacToe
 
         #region Game Logic Methods
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private async void Button_Click(object sender, RoutedEventArgs e)
         {
             if (gameEnded) return;
             if (sender is not Button button || button.Tag is not int index)
@@ -182,7 +184,7 @@ namespace TicTacToe
             // If AI game and player didn't win or draw, make AI move
             if (isAIGame && !gameEnded && currentPlayer == 'O')
             {
-                MakeAIMove();
+                await MakeAIMove();
             }
         }
 
@@ -219,10 +221,17 @@ namespace TicTacToe
             }
         }
 
-        private void MakeAIMove()
+        private async System.Threading.Tasks.Task MakeAIMove()
         {
-            // Delay to make AI move seem natural
-            System.Threading.Thread.Sleep(500);
+            // Delay to make AI move seem like thinking (1.2-2.2 seconds)
+            var random = new Random();
+            int thinkTime = random.Next(1200, 2200); // Random time between 1.2-2.2 seconds
+            
+            // Update UI to show AI is thinking
+            GameInfo.Text = "AI is thinking...";
+            
+            // Use Task.Delay instead of Thread.Sleep to keep UI responsive
+            await System.Threading.Tasks.Task.Delay(thinkTime);
             
             // Choose AI move based on difficulty
             (int row, int col) = aiDifficulty switch
@@ -268,8 +277,10 @@ namespace TicTacToe
         private (int, int) GetHardAIMove()
         {
             // Hard: Try to win, block player, or make strategic move
+            char originalPlayer = currentPlayer;
             
             // First check if AI can win
+            currentPlayer = 'O'; // Temporarily set to AI
             for (int i = 0; i < boardSize; i++)
             {
                 for (int j = 0; j < boardSize; j++)
@@ -280,6 +291,7 @@ namespace TicTacToe
                         if (CheckWin(i, j))
                         {
                             board[i, j] = ' '; // Undo move
+                            currentPlayer = originalPlayer; // Restore original player
                             return (i, j); // Winning move
                         }
                         board[i, j] = ' '; // Undo move
@@ -288,6 +300,7 @@ namespace TicTacToe
             }
             
             // Check if player can win and block
+            currentPlayer = 'X'; // Temporarily set to player
             for (int i = 0; i < boardSize; i++)
             {
                 for (int j = 0; j < boardSize; j++)
@@ -298,12 +311,16 @@ namespace TicTacToe
                         if (CheckWin(i, j))
                         {
                             board[i, j] = ' '; // Undo move
+                            currentPlayer = originalPlayer; // Restore original player
                             return (i, j); // Blocking move
                         }
                         board[i, j] = ' '; // Undo move
                     }
                 }
             }
+            
+            // Restore original player
+            currentPlayer = originalPlayer;
             
             // If center is empty, take it (for 3x3 board)
             if (boardSize == 3 && board[1, 1] == ' ')
