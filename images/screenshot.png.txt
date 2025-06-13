@@ -1,0 +1,10 @@
+<!-- This is a placeholder text file. Replace this with an actual PNG image of your game -->
+<!-- You can capture screenshots of your game using Windows' built-in screenshot tool (Win+Shift+S) -->
+<!-- Then save the image as screenshot.png in this folder -->
+
+<!-- Other useful tools for capturing and editing screenshots:
+     - Snipping Tool
+     - Greenshot
+     - ShareX
+     - GIMP or Photoshop for editing
+-->

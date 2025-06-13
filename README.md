@@ -2,7 +2,6 @@
 
 A modern, feature-rich implementation of the classic Tic-Tac-Toe game built with C# and WPF. This application offers multiple board sizes, game modes, and AI difficulty levels for an enhanced gaming experience.
 
-
 ## Table of Contents
 
 - [Features](#features)
@@ -173,8 +172,10 @@ Contributions are welcome! Feel free to submit issues, feature requests, or pull
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](https://github.com/JordanCJ7/Tic-Tac-Toe-Game-PC?tab=MIT-1-ov-file) file for details.
 
 ---
 
-© 2025 | Created with ❤️ by Janitha Gamage
+© 2025 | Created with ❤️ by [Janitha Gamage](https://github.com/JordanCJ7)
+```
+
