@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Threading;
 
 namespace TicTacToe
 {
@@ -16,6 +17,16 @@ namespace TicTacToe
         private int winLength;
         private bool isAIGame = false;
         private int aiDifficulty = 0; // 0: Easy, 1: Medium, 2: Hard
+        
+        // Game mode properties
+        private enum GameMode { Classic, Timed }
+        private GameMode currentGameMode = GameMode.Classic;
+        private int timeLimitPerMove = 5; // 5 seconds per move
+        private DispatcherTimer moveTimer = new DispatcherTimer();
+        private int timeLeftForCurrentMove;
+        private double totalTimeX = 0; // Total time taken by player X in seconds
+        private double totalTimeO = 0; // Total time taken by player O in seconds
+        private DateTime moveStartTime;
 
         public MainWindow()
         {
@@ -24,7 +35,61 @@ namespace TicTacToe
             // Explicitly set initial visibility
             GameModeScreen.Visibility = Visibility.Visible;
             BoardSizeScreen.Visibility = Visibility.Collapsed;
+            GameModeSelectionScreen.Visibility = Visibility.Collapsed;
             GameScreen.Visibility = Visibility.Collapsed;
+            
+            // Initialize the timer
+            moveTimer.Interval = TimeSpan.FromSeconds(1);
+            moveTimer.Tick += MoveTimer_Tick;
+        }
+
+        private void MoveTimer_Tick(object sender, EventArgs e)
+        {
+            timeLeftForCurrentMove--;
+            TimerInfo.Text = $"Time left: {timeLeftForCurrentMove} seconds";
+            
+            if (timeLeftForCurrentMove <= 0)
+            {
+                moveTimer.Stop();
+                
+                // Record time for the current player
+                RecordTimeForCurrentPlayer();
+                
+                // Skip the player's turn if time runs out
+                TimerInfo.Text = $"Time's up for Player {currentPlayer}!";
+                currentPlayer = currentPlayer == 'X' ? 'O' : 'X';
+                GameInfo.Text = $"Player {currentPlayer}'s Turn";
+                
+                // Restart timer for next player
+                StartMoveTimer();
+                
+                // If AI game and it's AI's turn, make AI move
+                if (isAIGame && currentPlayer == 'O')
+                {
+                    _ = MakeAIMove();
+                }
+            }
+        }
+
+        private void RecordTimeForCurrentPlayer()
+        {
+            TimeSpan elapsed = DateTime.Now - moveStartTime;
+            
+            if (currentPlayer == 'X')
+                totalTimeX += elapsed.TotalSeconds;
+            else
+                totalTimeO += elapsed.TotalSeconds;
+        }
+        
+        private void StartMoveTimer()
+        {
+            if (currentGameMode == GameMode.Timed)
+            {
+                moveStartTime = DateTime.Now;
+                timeLeftForCurrentMove = timeLimitPerMove;
+                TimerInfo.Text = $"Time left: {timeLeftForCurrentMove} seconds";
+                moveTimer.Start();
+            }
         }
 
         #region Navigation Methods
@@ -77,6 +142,12 @@ namespace TicTacToe
 
         private void MainMenu_Click(object sender, RoutedEventArgs e)
         {
+            // Stop the timer if it's running
+            if (moveTimer.IsEnabled)
+            {
+                moveTimer.Stop();
+            }
+            
             GameScreen.Visibility = Visibility.Collapsed;
             GameModeScreen.Visibility = Visibility.Visible;
             AIDifficultyText.Visibility = Visibility.Collapsed;
@@ -89,29 +160,61 @@ namespace TicTacToe
 
         private void Board3x3_Click(object sender, RoutedEventArgs e)
         {
-            StartGame(3, 3); // 3x3 board with 3 in a row to win
+            boardSize = 3;
+            winLength = 3;
+            BoardSizeScreen.Visibility = Visibility.Collapsed;
+            GameModeSelectionScreen.Visibility = Visibility.Visible;
         }
 
         private void Board4x4_Click(object sender, RoutedEventArgs e)
         {
-            StartGame(4, 4); // 4x4 board with 4 in a row to win
+            boardSize = 4;
+            winLength = 4;
+            BoardSizeScreen.Visibility = Visibility.Collapsed;
+            GameModeSelectionScreen.Visibility = Visibility.Visible;
         }
 
         private void Board5x5_Click(object sender, RoutedEventArgs e)
         {
-            StartGame(5, 4); // 5x5 board with 4 in a row to win
+            boardSize = 5;
+            winLength = 4;
+            BoardSizeScreen.Visibility = Visibility.Collapsed;
+            GameModeSelectionScreen.Visibility = Visibility.Visible;
         }
 
         private void Board6x6_Click(object sender, RoutedEventArgs e)
         {
-            StartGame(6, 5); // 6x6 board with 5 in a row to win
+            boardSize = 6;
+            winLength = 5;
+            BoardSizeScreen.Visibility = Visibility.Collapsed;
+            GameModeSelectionScreen.Visibility = Visibility.Visible;
+        }
+        
+        private void ClassicMode_Click(object sender, RoutedEventArgs e)
+        {
+            currentGameMode = GameMode.Classic;
+            StartGame();
         }
 
-        private void StartGame(int size, int winCondition)
+        private void TimedMode_Click(object sender, RoutedEventArgs e)
         {
-            boardSize = size;
-            winLength = winCondition;
+            currentGameMode = GameMode.Timed;
+            StartGame();
+        }
+        
+        private void BackToBoardSize_Click(object sender, RoutedEventArgs e)
+        {
+            GameModeSelectionScreen.Visibility = Visibility.Collapsed;
+            BoardSizeScreen.Visibility = Visibility.Visible;
+        }
+
+        private void StartGame()
+        {
             board = new char[boardSize, boardSize];
+            
+            // Reset time tracking
+            totalTimeX = 0;
+            totalTimeO = 0;
             
             // Initialize the game
             InitializeGameBoard();
@@ -119,8 +222,20 @@ namespace TicTacToe
             
             // Update UI
             GameInfo.Text = "Player X's Turn";
-            BoardSizeScreen.Visibility = Visibility.Collapsed;
+            GameModeSelectionScreen.Visibility = Visibility.Collapsed;
             GameScreen.Visibility = Visibility.Visible;
+            
+            // Set up timer visibility
+            if (currentGameMode == GameMode.Timed)
+            {
+                TimerInfo.Visibility = Visibility.Visible;
+                TimerInfo.Text = $"Time left: {timeLimitPerMove} seconds";
+                StartMoveTimer();
+            }
+            else
+            {
+                TimerInfo.Visibility = Visibility.Collapsed;
+            }
         }
 
         private void InitializeGameBoard()
@@ -159,7 +274,22 @@ namespace TicTacToe
 
         private void NewGame_Click(object sender, RoutedEventArgs e)
         {
+            // Stop the timer if it's running
+            if (moveTimer.IsEnabled)
+            {
+                moveTimer.Stop();
+            }
+            
             ResetGame();
+            
+            // Restart timer if in timed mode
+            if (currentGameMode == GameMode.Timed)
+            {
+                totalTimeX = 0;
+                totalTimeO = 0;
+                TimerInfo.Text = $"Time left: {timeLimitPerMove} seconds";
+                StartMoveTimer();
+            }
         }
 
         #endregion
@@ -190,6 +320,13 @@ namespace TicTacToe
 
         private void MakeMove(int row, int col)
         {
+            // Stop timer if in timed mode
+            if (currentGameMode == GameMode.Timed)
+            {
+                moveTimer.Stop();
+                RecordTimeForCurrentPlayer();
+            }
+            
             board[row, col] = currentPlayer;
             
             // Update the button
@@ -205,19 +342,44 @@ namespace TicTacToe
             if (CheckWin(row, col))
             {
                 GameInfo.Text = $"Player {currentPlayer} wins!";
-                MessageBox.Show($"Player {currentPlayer} wins!");
+                if (currentGameMode == GameMode.Timed)
+                {
+                    MessageBox.Show($"Player {currentPlayer} wins!\nX total time: {totalTimeX:F1}s, O total time: {totalTimeO:F1}s");
+                    TimerInfo.Text = $"X total time: {totalTimeX:F1}s, O total time: {totalTimeO:F1}s";
+                }
+                else
+                {
+                    MessageBox.Show($"Player {currentPlayer} wins!");
+                }
                 gameEnded = true;
             }
             else if (IsBoardFull())
             {
-                GameInfo.Text = "It's a draw!";
-                MessageBox.Show("It's a draw!");
+                // In timed mode, if it's a draw, the player who used less time wins
+                if (currentGameMode == GameMode.Timed)
+                {
+                    string winnerByTime = totalTimeX < totalTimeO ? "X" : "O";
+                    GameInfo.Text = $"Draw! Player {winnerByTime} wins by time!";
+                    MessageBox.Show($"It's a draw! Player {winnerByTime} wins by using less time.\nX: {totalTimeX:F1}s, O: {totalTimeO:F1}s");
+                    TimerInfo.Text = $"X total time: {totalTimeX:F1}s, O total time: {totalTimeO:F1}s";
+                }
+                else
+                {
+                    GameInfo.Text = "It's a draw!";
+                    MessageBox.Show("It's a draw!");
+                }
                 gameEnded = true;
             }
             else
             {
                 currentPlayer = currentPlayer == 'X' ? 'O' : 'X';
                 GameInfo.Text = $"Player {currentPlayer}'s Turn";
+                
+                // Start timer for next player if in timed mode
+                if (currentGameMode == GameMode.Timed)
+                {
+                    StartMoveTimer();
+                }
             }
         }
 
@@ -444,6 +606,11 @@ namespace TicTacToe
             foreach (Button btn in GameGrid.Children)
                 btn.Content = string.Empty;
             GameInfo.Text = "Player X's Turn";
+            
+            if (currentGameMode == GameMode.Timed)
+            {
+                StartMoveTimer();
+            }
         }
 
         #endregion
