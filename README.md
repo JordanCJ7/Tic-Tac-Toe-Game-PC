@@ -2,7 +2,6 @@
 
 A modern, feature-rich implementation of the classic Tic-Tac-Toe game built with C# and WPF. This application offers multiple board sizes, game modes, and AI difficulty levels for an enhanced gaming experience.
 
-![Tic-Tac-Toe Game](https://example.com/screenshot.png) <!-- Replace with an actual screenshot -->
 
 ## Table of Contents
 
@@ -13,6 +12,7 @@ A modern, feature-rich implementation of the classic Tic-Tac-Toe game built with
 - [AI Difficulty Levels](#ai-difficulty-levels)
 - [Board Sizes](#board-sizes)
 - [How to Play](#how-to-play)
+- [Screenshots Gallery](#screenshots-gallery)
 - [Installation](#installation)
 - [Future Enhancements](#future-enhancements)
 - [Contributing](#contributing)
@@ -105,6 +105,22 @@ The game offers four different board sizes, each with appropriate win conditions
    - View the result (win, lose, or draw)
    - View time statistics (in Timed Mode)
    - Choose to play again or return to the main menu
+
+## Screenshots Gallery
+
+Below are screenshots showcasing various aspects of the game:
+
+### Main Menu and Game Setup
+![Main Menu](./images/TTT%201.png)
+![Game Setup](./images/TTT%202.png)
+
+### Gameplay Experience
+![Gameplay 1](./images/TTT%203.png)
+![Gameplay 2](./images/TTT%204.png)
+
+### Game Modes and Features
+![Game Features](./images/TTT%205.png)
+![Game Results](./images/TTT%206.png)
 
 ## Installation
 
