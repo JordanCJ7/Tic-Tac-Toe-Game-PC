@@ -177,4 +177,3 @@ This project is licensed under the MIT License - see the [LICENSE](https://githu
 ---
 
 © 2025 | Created with ❤️ by [Janitha Gamage](https://github.com/JordanCJ7)
-```
