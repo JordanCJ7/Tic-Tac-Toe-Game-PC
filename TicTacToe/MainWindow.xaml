@@ -18,8 +18,7 @@
                 </StackPanel>
             </StackPanel>
         </Grid>
-        
-        <!-- Second Screen: Board Size Selection -->
+          <!-- Second Screen: Board Size Selection -->
         <Grid x:Name="BoardSizeScreen" Visibility="Collapsed" Background="White">
             <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
                 <TextBlock Text="Select Board Size" FontSize="24" Margin="0,0,0,20" TextAlignment="Center" Foreground="Black"/>
@@ -30,22 +29,36 @@
                 <Button Content="Back" Width="200" Height="40" Margin="0,20,0,5" Click="BackToGameMode_Click" Background="LightGray"/>
             </StackPanel>
         </Grid>
+          <!-- Third Screen: Game Mode Type Selection -->
+        <Grid x:Name="GameModeSelectionScreen" Visibility="Collapsed" Background="White">
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                <TextBlock Text="Select Game Mode" FontSize="24" Margin="0,0,0,20" TextAlignment="Center" Foreground="Black"/>
+                <Button Content="Classic Mode" Width="200" Height="40" Margin="0,5" Click="ClassicMode_Click" Background="LightBlue"/>
+                <Button Content="Timed Mode (5s per move)" Width="200" Height="40" Margin="0,5" Click="TimedMode_Click" Background="LightGreen"/>
+                <TextBlock Text="In Timed Mode, players have 5 seconds per move. If time runs out, turn is skipped. In case of a draw, the player with the least total time wins." 
+                           TextWrapping="Wrap" Width="280" Margin="0,10,0,10" TextAlignment="Center" FontSize="12"/>
+                <Button Content="Back" Width="200" Height="40" Margin="0,10,0,5" Click="BackToBoardSize_Click" Background="LightGray"/>
+            </StackPanel>
+        </Grid>
         
         <!-- Game Screen -->
         <Grid x:Name="GameScreen" Visibility="Collapsed">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
             
-            <TextBlock x:Name="GameInfo" Text="Player X's Turn" FontSize="20" Margin="10" TextAlignment="Center" Grid.Row="0"/>
+            <TextBlock x:Name="GameInfo" Text="Player X's Turn" FontSize="20" Margin="10,10,10,0" TextAlignment="Center" Grid.Row="0"/>
             
-            <UniformGrid Grid.Row="1" x:Name="GameGrid" Margin="10">
+            <TextBlock x:Name="TimerInfo" Text="" FontSize="16" Margin="10,0,10,10" TextAlignment="Center" Grid.Row="1" Visibility="Collapsed"/>
+            
+            <UniformGrid Grid.Row="2" x:Name="GameGrid" Margin="10">
                 <!-- Buttons for the game will be added in code-behind -->
             </UniformGrid>
             
-            <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" Margin="10">
+            <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Center" Margin="10">
                 <Button Content="New Game" Width="100" Margin="5" Click="NewGame_Click"/>
                 <Button Content="Main Menu" Width="100" Margin="5" Click="MainMenu_Click"/>
             </StackPanel>
